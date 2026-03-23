@@ -1,5 +1,5 @@
 """
-uv run scripts/pretokenize.py dataset/metadata_encoded.csv dataset/pretokenized
+uv run -m scripts.pretokenize dataset/audio/metadata_encoded.csv dataset/pretokenized
 """
 import argparse
 import random

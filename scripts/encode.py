@@ -2,7 +2,7 @@
 uv run hf download --repo-type dataset thewh1teagle/hebrew-tts-dataset --include "heb-female-audio-ipa2-v2.7z" --local-dir .
 7z x heb-female-audio-ipa2-v2.7z
 mv heb-female-audio-ipa2-v2 dataset/audio/
-uv run scripts/encode.py dataset/audio/metadata.csv dataset/metadata_encoded.csv
+uv run -m scripts.encode dataset/audio/metadata.csv dataset/audio/metadata_encoded.csv
 """
 import argparse
 import sys
