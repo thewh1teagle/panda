@@ -25,6 +25,8 @@ parser.add_argument("--lr", type=float, default=1e-4)
 parser.add_argument("--weight_decay", type=float, default=0.01)
 parser.add_argument("--warmup_pct", type=float, default=0.05)
 parser.add_argument("--save_every", type=int, default=1)
+parser.add_argument("--bf16", action="store_true", default=True)
+parser.add_argument("--grad_checkpoint", action="store_true", default=True)
 args = parser.parse_args()
 
 def get_model_config():

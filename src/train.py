@@ -16,6 +16,8 @@ loader = get_loader()
 val_loader = get_val_loader()
 
 model = get_model().to(device)
+if args.grad_checkpoint:
+    model.gradient_checkpointing_enable()
 optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
 total_steps = args.epochs * len(loader)
 scheduler = OneCycleLR(optimizer, max_lr=args.lr, total_steps=total_steps,
@@ -37,8 +39,9 @@ for epoch in range(args.epochs):
             labels[i, :gen_pos + 1] = IGNORE_INDEX  # ignore prompt tokens in loss
         labels[input_ids == PAD] = IGNORE_INDEX
 
-        outputs = model(input_ids=input_ids, attention_mask=attention_mask, labels=labels)
-        loss = outputs.loss
+        with torch.autocast(device_type=device.type, dtype=torch.bfloat16, enabled=args.bf16):
+            outputs = model(input_ids=input_ids, attention_mask=attention_mask, labels=labels)
+            loss = outputs.loss
 
         optimizer.zero_grad()
         loss.backward()
