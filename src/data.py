@@ -1,7 +1,7 @@
 import torch
 from torch.utils.data import DataLoader
 from datasets import load_from_disk
-from src.config import PAD, args
+from src.config import PAD
 
 
 def collate(batch):
@@ -15,11 +15,12 @@ def collate(batch):
     return input_ids, attention_mask
 
 
-def get_loader():
-    ds = load_from_disk(args.dataset + "/train")
-    return DataLoader(ds, batch_size=args.batch_size, shuffle=True, collate_fn=collate)
+def get_loader(dataset_path, batch_size):
+    ds = load_from_disk(dataset_path + "/train")
+    return DataLoader(ds, batch_size=batch_size, shuffle=True, collate_fn=collate)
 
 
-def get_val_loader():
-    ds = load_from_disk(args.dataset + "/val")
-    return DataLoader(ds, batch_size=args.batch_size, shuffle=False, collate_fn=collate)
+def get_val_loader(dataset_path, batch_size):
+    ds = load_from_disk(dataset_path + "/val")
+    return DataLoader(ds, batch_size=batch_size, shuffle=False, collate_fn=collate)
+

@@ -5,15 +5,17 @@ from tqdm import tqdm
 from src.model import get_model
 from src.data import get_loader, get_val_loader
 from torch.optim.lr_scheduler import OneCycleLR
-from src.config import PAD, GENERATE, EOS, args
+from src.config import PAD, GENERATE, EOS, get_args
 from src.constants import IGNORE_INDEX
 from src.eval import evaluate
+
+args = get_args()
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}")
 
-loader = get_loader()
-val_loader = get_val_loader()
+loader = get_loader(args.dataset, args.batch_size)
+val_loader = get_val_loader(args.dataset, args.batch_size)
 
 model = get_model().to(device)
 if args.grad_checkpoint:
