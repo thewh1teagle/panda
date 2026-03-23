@@ -17,7 +17,11 @@ print(f"Using device: {device}")
 loader = get_loader(args.dataset, args.batch_size)
 val_loader = get_val_loader(args.dataset, args.batch_size)
 
-model = get_model().to(device)
+if args.resume:
+    from transformers import Qwen3ForCausalLM
+    model = Qwen3ForCausalLM.from_pretrained(args.resume).to(device)
+else:
+    model = get_model().to(device)
 if args.grad_checkpoint:
     model.gradient_checkpointing_enable()
 optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
@@ -26,7 +30,15 @@ scheduler = OneCycleLR(optimizer, max_lr=args.lr, total_steps=total_steps,
                        pct_start=args.warmup_pct)
 os.makedirs(args.output, exist_ok=True)
 
-for epoch in range(args.epochs):
+start_epoch = 0
+if args.resume:
+    state = torch.load(os.path.join(args.resume, "train_state.pt"), map_location=device)
+    optimizer.load_state_dict(state["optimizer"])
+    scheduler.load_state_dict(state["scheduler"])
+    start_epoch = state["epoch"]
+    print(f"resumed from epoch {start_epoch}")
+
+for epoch in range(start_epoch, args.epochs):
     model.train()
     total_loss = 0
     for input_ids, attention_mask in (pbar := tqdm(loader, desc=f"epoch {epoch+1}", leave=True)):
@@ -62,4 +74,9 @@ for epoch in range(args.epochs):
     if (epoch + 1) % args.save_every == 0:
         ckpt_path = os.path.join(args.output, f"epoch_{epoch+1}")
         model.save_pretrained(ckpt_path)
+        torch.save({
+            "epoch": epoch + 1,
+            "optimizer": optimizer.state_dict(),
+            "scheduler": scheduler.state_dict(),
+        }, os.path.join(ckpt_path, "train_state.pt"))
         print(f"saved checkpoint to {ckpt_path}")

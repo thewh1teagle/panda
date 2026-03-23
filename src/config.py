@@ -28,6 +28,7 @@ def get_args():
     parser.add_argument("--save_every", type=int, default=1)
     parser.add_argument("--bf16", action="store_true", default=True)
     parser.add_argument("--grad_checkpoint", action="store_true", default=True)
+    parser.add_argument("--resume", type=str, default=None, help="path to checkpoint to resume from")
     return parser.parse_args()
 
 
