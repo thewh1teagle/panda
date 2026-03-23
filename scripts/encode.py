@@ -7,6 +7,7 @@ uv run scripts/encode.py dataset/audio/metadata.csv dataset/metadata_encoded.csv
 import argparse
 import sys
 import torch
+import librosa
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from tqdm import tqdm
@@ -28,6 +29,9 @@ with open(metadata) as f:
     for line in f:
         parts = line.strip().split("|")
         rows.append(parts)
+
+# sort by duration so batches have similar-length audio (minimizes padding waste)
+rows.sort(key=lambda r: librosa.get_duration(path=audio_dir / f"{r[0]}.wav"))
 
 with open(out_path, "w") as out:
     for i in tqdm(range(0, len(rows), args.batch_size)):

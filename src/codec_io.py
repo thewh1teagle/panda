@@ -3,7 +3,7 @@ import numpy as np
 import librosa
 from snac import SNAC
 
-from src.constants import SAMPLE_RATE
+from src.constants import SAMPLE_RATE, SNAC_HOP
 from src.codec import codes_to_flat
 
 _model = None
@@ -31,14 +31,24 @@ def wav_to_codes(wav_path: str, device: str = "cpu") -> list[int]:
 def batch_wav_to_codes(wav_paths: list[str], device: str = "cpu") -> list[list[int]]:
     """Load and encode a batch of wavs, return list of flat raw codes."""
     audios = [librosa.load(p, sr=SAMPLE_RATE, mono=True)[0] for p in wav_paths]
-    max_len = max(a.shape[0] for a in audios)
+    lengths = [a.shape[0] for a in audios]
+    max_len = max(lengths)
     padded = np.zeros((len(audios), 1, max_len), dtype=np.float32)
     for i, a in enumerate(audios):
         padded[i, 0, :a.shape[0]] = a
     tensor = torch.from_numpy(padded).to(device)
     with torch.inference_mode():
         codes = get_snac(device).encode(tensor)
-    return [codes_to_flat(codes, i) for i in range(len(wav_paths))]
+    results = []
+    for i, n_samples in enumerate(lengths):
+        n_frames = (n_samples + SNAC_HOP - 1) // SNAC_HOP
+        trimmed = [
+            codes[0][i:i+1, :n_frames],
+            codes[1][i:i+1, :n_frames * 2],
+            codes[2][i:i+1, :n_frames * 4],
+        ]
+        results.append(codes_to_flat(trimmed, 0))
+    return results
 
 
 def decode(audio_ids: list[int]) -> np.ndarray:
