@@ -32,10 +32,17 @@ os.makedirs(args.output, exist_ok=True)
 
 start_epoch = 0
 if args.resume:
-    state = torch.load(os.path.join(args.resume, "train_state.pt"), map_location=device)
-    optimizer.load_state_dict(state["optimizer"])
-    scheduler.load_state_dict(state["scheduler"])
-    start_epoch = state["epoch"]
+    state_path = os.path.join(args.resume, "train_state.pt")
+    if os.path.exists(state_path):
+        state = torch.load(state_path, map_location=device)
+        optimizer.load_state_dict(state["optimizer"])
+        scheduler.load_state_dict(state["scheduler"])
+        start_epoch = state["epoch"]
+    else:
+        # TODO: remove — legacy fallback for checkpoints without train_state.pt
+        import re
+        m = re.search(r"epoch_(\d+)", args.resume)
+        start_epoch = int(m.group(1)) if m else 0
     print(f"resumed from epoch {start_epoch}")
 
 for epoch in range(start_epoch, args.epochs):
