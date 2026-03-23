@@ -15,11 +15,11 @@ uv run scripts/encode.py dataset/metadata.csv dataset/metadata_encoded.csv
 uv run scripts/pretokenize.py dataset/metadata_encoded.csv dataset/pretokenized
 
 # 4. train
-uv run -m src/train.py dataset/pretokenized checkpoints/
+uv run src/train.py dataset/pretokenized checkpoints/
 ```
 
 ## Inference
 
 ```bash
-uv run -m src/infer.py checkpoints/epoch_10 "həlˈoʊ" output.wav
+uv run src/infer.py checkpoints/epoch_10 "həlˈoʊ" output.wav
 ```
