@@ -50,7 +50,7 @@ for epoch in range(args.epochs):
         scheduler.step()
 
         total_loss += loss.item()
-        pbar.set_postfix(loss=f"{loss.item():.4f}")
+        pbar.set_postfix(loss=f"{loss.item():.4f}", lr=f"{scheduler.get_last_lr()[0]:.2e}")
 
     avg_loss = total_loss / len(loader)
     val_loss = evaluate(model, val_loader, device)
