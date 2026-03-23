@@ -27,7 +27,7 @@ os.makedirs(args.output, exist_ok=True)
 for epoch in range(args.epochs):
     model.train()
     total_loss = 0
-    for input_ids, attention_mask in tqdm(loader, desc=f"epoch {epoch+1}", leave=True):
+    for input_ids, attention_mask in (pbar := tqdm(loader, desc=f"epoch {epoch+1}", leave=True)):
         input_ids = input_ids.to(device)
         attention_mask = attention_mask.to(device)
 
@@ -50,6 +50,7 @@ for epoch in range(args.epochs):
         scheduler.step()
 
         total_loss += loss.item()
+        pbar.set_postfix(loss=f"{loss.item():.4f}")
 
     avg_loss = total_loss / len(loader)
     val_loss = evaluate(model, val_loader, device)
